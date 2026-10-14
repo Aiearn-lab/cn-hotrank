@@ -1,0 +1,10 @@
+name = "cn-hotrank"
+main = "dist-worker/worker/index.js"
+compatibility_date = "2026-10-14"
+
+[durable_objects]
+bindings = [{ name = "HOTRANK_MCP", class_name = "HotRankMCP" }]
+
+[[migrations]]
+tag = "v1"
+new_sqlite_classes = ["HotRankMCP"]

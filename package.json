@@ -16,15 +16,24 @@
   },
   "scripts": {
     "build": "tsc",
+    "build:worker": "tsc -p tsconfig.worker.json",
     "start": "node dist/index.js",
     "dev": "tsc --watch",
-    "inspect": "npx @modelcontextprotocol/inspector node dist/index.js"
+    "inspect": "npx @modelcontextprotocol/inspector node dist/index.js",
+    "deploy": "npm run build:worker && wrangler deploy",
+    "deploy:dry": "npm run build:worker && wrangler deploy --dry-run"
   },
   "dependencies": {
-    "@modelcontextprotocol/sdk": "^1.18.0"
+    "@modelcontextprotocol/client": "^2.3.1",
+    "@modelcontextprotocol/sdk": "^1.18.0",
+    "@modelcontextprotocol/server": "^2.3.1",
+    "agents": "^0.28.1",
+    "zod": "^3.25.0"
   },
   "devDependencies": {
+    "@cloudflare/workers-types": "^5.20261014.0",
     "@types/node": "^22.10.0",
-    "typescript": "^5.7.0"
+    "typescript": "^5.7.0",
+    "wrangler": "^4.0.0"
   }
 }
