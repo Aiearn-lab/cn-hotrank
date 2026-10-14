@@ -3,8 +3,18 @@ main = "dist-worker/worker/index.js"
 compatibility_date = "2026-10-14"
 
 [durable_objects]
-bindings = [{ name = "HOTRANK_MCP", class_name = "HotRankMCP" }]
+bindings = [
+  { name = "HOTRANK_MCP", class_name = "HotRankMCP" },
+  { name = "CPH_STORE", class_name = "CphEventStore" }
+]
+
+[ai]
+binding = "AI"
 
 [[migrations]]
 tag = "v1"
 new_sqlite_classes = ["HotRankMCP"]
+
+[[migrations]]
+tag = "v2"
+new_sqlite_classes = ["CphEventStore"]
