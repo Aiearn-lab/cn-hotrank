@@ -5,10 +5,13 @@
  *   POST /mcp/message?sessionId=xx -> 发送 JSON-RPC 消息
  * 工具逻辑与 stdio 版共用 tools-core.ts。
  */
+import { routeAgentRequest } from "agents";
 import { McpAgent } from "agents/mcp";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { WebStandardStreamableHTTPServerTransport } from "@modelcontextprotocol/sdk/server/webStandardStreamableHttp.js";
 import { z } from "zod";
-import { callTool, TOOL_DEFS } from "../src/tools-core.js";
+import { callTool, registerHandlers, TOOL_DEFS } from "../src/tools-core.js";
 import { SOURCES } from "../src/sources/index.js";
 
 const PLATFORM_IDS = SOURCES.map((s) => s.platform);
@@ -45,4 +48,26 @@ export class HotRankMCP extends McpAgent<Env> {
   }
 }
 
-export default HotRankMCP.mount("/mcp", { binding: "HOTRANK_MCP" });
+const mounted = HotRankMCP.mount("/mcp", { binding: "HOTRANK_MCP" });
+
+/** /http 端点：Streamable HTTP（单次 POST，无 session 模式）——隧道/curl/按次计费友好 */
+async function handleStreamable(request: Request): Promise<Response> {
+  if (request.method !== "POST") {
+    return new Response("cn-hotrank Streamable HTTP: POST JSON-RPC here", { status: 200 });
+  }
+  const server = new Server({ name: "cn-hotrank", version: "0.2.1" }, { capabilities: { tools: {} } });
+  registerHandlers(server);
+  const transport = new WebStandardStreamableHTTPServerTransport({ sessionIdGenerator: undefined });
+  await server.connect(transport);
+  return transport.handleRequest(request);
+}
+
+export default {
+  async fetch(request: Request, env: Env, ctx: ExecutionContext): Promise<Response> {
+    const url = new URL(request.url);
+    if (url.pathname === "/http") {
+      return handleStreamable(request);
+    }
+    return mounted.fetch(request, env, ctx);
+  },
+};

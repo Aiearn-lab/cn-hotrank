@@ -2,6 +2,8 @@
  * 共享工具核心：与传输层（stdio / Cloudflare Worker）无关
  * 工具定义 + 执行逻辑都在这里，两个入口各自注册，杜绝双份维护。
  */
+import { Server } from "@modelcontextprotocol/sdk/server/index.js";
+import { CallToolRequestSchema, ListToolsRequestSchema } from "@modelcontextprotocol/sdk/types.js";
 import { getHotRank, SOURCES } from "./sources/index.js";
 import { SUSPENDED } from "./sources/suspended.js";
 
@@ -43,6 +45,15 @@ export const TOOL_DEFS = [
     inputSchema: { type: "object" as const, properties: {} },
   },
 ];
+
+/** 在低级 Server 实例上注册工具 handlers（stdio 与 Worker /http 端点共用） */
+export function registerHandlers(server: Server): void {
+  server.setRequestHandler(ListToolsRequestSchema, async () => ({ tools: TOOL_DEFS }));
+  server.setRequestHandler(CallToolRequestSchema, async (req) => {
+    const content = await callTool(req.params.name, (req.params.arguments ?? {}) as Record<string, unknown>);
+    return { content };
+  });
+}
 
 /** 执行工具调用，返回 MCP content 数组 */
 export async function callTool(

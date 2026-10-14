@@ -52,10 +52,26 @@ npm run inspect   # MCP Inspector 调试
 
 ## 路线图
 
-- **v0.1（本周）**：stdio 本地跑通，4 平台聚合 + 缓存 + 降级 ✅ 骨架已建
-- **v0.2（下周）**：Cloudflare Workers 部署（HTTP 传输）+ mcp.so / PulseMCP / Smithery 上架
+- **v0.1（2026-10-14 已完成）**：stdio 本地版，4 平台聚合 + 缓存 + 降级，冒烟通过
+- **v0.2（2026-10-14 已部署）**：Cloudflare Workers 上线（SSE MCP）——本地全链路验证通过（四平台真实数据从 Workers 出口拉到）；公网地址 https://cn-hotrank.7388603.workers.dev
 - **v0.3**：MCP Marketplace 付费版 + x402 按次计费
-- **v1.0**：5-8 平台（知乎/B站走官方渠道解禁后）+ 趋势对比工具
+- **v1.0**：5-8 平台（知乎/B站走官方渠道解禁后）+ 趋势对比工具 + 自定义域名（墙内可达，B 线国内客户需要）
+
+## 部署与验证（v0.2）
+
+- 部署：`npm run deploy`（wrangler，Cloudflare 账号已授权）
+- 端点：`GET/SSE https://cn-hotrank.7388603.workers.dev/mcp`
+- 验证脚本：
+  - `scripts/verify_sse.py <base_url>` —— SSE 模式 MCP 全协议（initialize→tools/call→tools/list）
+  - `scripts/verify_remote.py` —— GitHub 远端双通道验证（API + ls-remote，带重试）
+  - `scripts/dns_probe.py` —— workers.dev DNS 污染诊断（TCP DNS + DoH + --resolve）
+- **网络真相【实，2026-10-14 实测】**：workers.dev 被 GFW 全面 DNS 封锁（UDP/TCP/DoH 全路径注入 Facebook 假 IP），墙内不可达；github.com 为间歇性通行；api.github.com/codeload 较稳；Cloudflare API 域通畅。海外 agent 用户访问 workers.dev 无此问题；国内场景需自定义域名（见 v1.0）
+
+## 依赖说明（v0.2 踩坑记录）
+
+- agents@0.28.1 + @modelcontextprotocol/server@2.3.1 + @modelcontextprotocol/client@2.3.1（后两者是 agents 的 devDeps，需显式安装，否则 wrangler 打包报 "Could not resolve"）
+- 安装需 `--legacy-peer-deps`（agents 要 zod4 peer，MCP SDK 用 zod3，运行时兼容）
+- agents 0.0.x 的 McpAgent 有重复 connect bug，0.28.1 已修；挂载必须用 `McpAgent.mount()` 而非 `routeAgentRequest`
 
 ## 目录
 
