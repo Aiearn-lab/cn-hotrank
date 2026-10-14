@@ -60,12 +60,18 @@ npm run inspect   # MCP Inspector 调试
 ## 部署与验证（v0.2）
 
 - 部署：`npm run deploy`（wrangler，Cloudflare 账号已授权）
-- 端点：`GET/SSE https://cn-hotrank.7388603.workers.dev/mcp`
+- 端点（v0.2.1 起双协议）：
+  - `GET/SSE https://cn-hotrank.7388603.workers.dev/mcp`（SSE 模式，标准 MCP 客户端）
+  - `POST https://cn-hotrank.7388603.workers.dev/http`（Streamable HTTP，单次 POST，Accept: application/json, text/event-stream）——隧道/curl/x402 按次计费友好
 - 验证脚本：
   - `scripts/verify_sse.py <base_url>` —— SSE 模式 MCP 全协议（initialize→tools/call→tools/list）
   - `scripts/verify_remote.py` —— GitHub 远端双通道验证（API + ls-remote，带重试）
   - `scripts/dns_probe.py` —— workers.dev DNS 污染诊断（TCP DNS + DoH + --resolve）
-- **网络真相【实，2026-10-14 实测】**：workers.dev 被 GFW 全面 DNS 封锁（UDP/TCP/DoH 全路径注入 Facebook 假 IP），墙内不可达；github.com 为间歇性通行；api.github.com/codeload 较稳；Cloudflare API 域通畅。海外 agent 用户访问 workers.dev 无此问题；国内场景需自定义域名（见 v1.0）
+- **验证结论【实，2026-10-14】**：
+  - 本地 dev 全链路通过（SSE + Streamable HTTP 双协议）
+  - **墙内公网验证通过**：trycloudflare 隧道域名下 initialize + tools/call 全通（微博 top1 实时返回）——SSE 长连接会被 Quick Tunnel 缓冲，Streamable HTTP 单 POST 无此问题
+  - 生产 workers.dev 地址墙内不可达（DNS 污染+SNI 阻断双层，见下），海外 agent 用户无感
+- **网络真相【实，2026-10-14 实测】**：workers.dev 被 GFW 全面封锁——DNS 全路径（UDP/TCP/DoH）注入 Facebook/Twitter 假 IP，且真实 CF IP（104.x/2606:4700::）下 TLS SNI=workers.dev 被即时 RST（同 IP 下 dash.cloudflare.com 正常）；github.com 为间歇性通行；api.github.com/codeload/Cloudflare API 域稳定。国内场景需自定义域名（见 v1.0）；墙内临时验证可用 `wrangler dev --tunnel`
 
 ## 依赖说明（v0.2 踩坑记录）
 
