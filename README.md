@@ -94,3 +94,16 @@ src/
     baidu.ts        # 百度热搜（HTML 解析）
     suspended.ts    # 知乎/B站 stub（合规暂缓，记录解禁路径）
 ```
+
+---
+
+## About / 关于
+
+Maintained by **Zhiwei Studio (知微工作室)** — an AI-first engineering studio.
+
+本服务由 **知微工作室** 维护。我们是一支 AI 参与交付的工程小队，承接 AI 工程外包：
+连接器/数据接口、知识图谱与 RAG 检索、RBAC 与租户隔离、Trace 与评测看板、
+SFT/DPO 数据管线、灰度发布与运维移交等。
+
+- 能力总览 / Capability card: **https://ai-eng-capability.app.workbuddy.host/**
+- 商务合作：cqsj6667@agent.qq.com
